@@ -8,31 +8,42 @@ router.get("/pet/:id", (req, res) => {
     let id =  req.params.id;
 
     if(isNaN(id)) {
-        res.status(404).send({ message: 'Id invalido'});
+        res.status(404).send({ message: 'Id invalido.'});
     }
-    Pets.findByPk(id).then
-        ({
-            include: [{model: Owners, attributes: ['name', 'fone']}]
+    Pets.findByPk(id, {
+            include: [{model: Owners, attributes: ['ownerId', 'name', 'fone'] }],
+             attributes: ['name', 'age', 'type', 'race']   
         })
         .then( pet =>{
             if(!pet){
-                res.status(404).send({message:'Pet não encontrado'});
+                res.status(404).send({message:'Pet não encontrado.'});
             }else{
                 res.json(pet)
             }
-        }).catch(err =>{
+        })
+        .catch(err =>{
             console.error(err);
             res.status(500).send({message: err.message});
-        })
+        });
 });
 
 // Rota para Visualização do Pet e do seu tutor 
 router.get("/pets", (req,res) =>{
     Pets.findAll({//Comando para buscar todos os pets que estão listados no  banco de dados
-        include: [{model: Owners, attributes: ['name', 'fone']}]
+        include: [
+            {
+                model: Owners, 
+                attributes: ['ownerId', 'name', 'fone']
+            }
+        ], 
+         attributes: ['id', 'name', 'age', 'type', 'race']   
     })
     .then( pets =>{//Retorno da rota
-        res.json(pets);
+        res.json({pets : pets});
+    })
+    .catch(err =>{
+        console.error(err);
+        res.status(500).json({err: 'Erro ao buscar pets'});
     });
 });
 
@@ -67,7 +78,7 @@ router.delete("/pet/delete/:id", (req, res) =>{
         Pets.destroy({
             where: {id: id}
         })
-        .then((result) =>{
+        .then((result) =>{ 
             if(result === 1){
                 res.status(200).send({message: `Sucesso na a exclusão do id: ${id}!`});
             }else{

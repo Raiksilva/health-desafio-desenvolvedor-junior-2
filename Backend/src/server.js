@@ -2,6 +2,13 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 
+app.use(cors({
+    origin: '*', // Permitindo todas as origens (restrinja em produção)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+}));
+
 const connection = require('./models/database.js');
 const Pet = require('./models/pet.js');
 const Owners = require('./models/owners');

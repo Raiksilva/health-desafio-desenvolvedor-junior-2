@@ -1,9 +1,7 @@
 const Sequelize = require('sequelize');
 const connection = require('./database');
-const Pet = require('./pet');
 
 /* motagem da tabela e colunas para o tutor do animal  */
-
 const Owners = connection.define('owners',{
     ownerId: { type: Sequelize.INTEGER,
         primaryKey: true,

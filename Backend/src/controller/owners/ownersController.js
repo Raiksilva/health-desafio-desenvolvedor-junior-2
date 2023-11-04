@@ -5,10 +5,44 @@ const connection = require('../../models/database')
 const Owners = require('../../models/owners');
 const Pet = require('../../models/pet');
 
-/* Rotar que vai puxar uma lista de todos os tutores que estão cadastrados  */
+router.get('/owner/:ownerId', (req, res) => {
+    let ownerId = req.params.ownerId
+
+    if(isNaN(ownerId)) {
+        res.status(404).send({ message: 'Id invalido.'})
+    }
+    Owners.findByPk(ownerId, {
+        include: [
+            { 
+                model: Pet, attributes: ['id', 'name', ]
+            }
+        ], attributes: ['ownerId', 'name', 'fone']
+    })
+    .then( owners =>{
+        if(!owners){
+            res.status(404).send({message: 'Tutor não encontardo.'});
+        }else{
+            res.json(owners);
+        }
+    })
+    .catch(err =>{
+        console.error(err);
+        res.status(500).send({message: err.message});
+    });
+});
+
+
+
+/* ,Rotar que vai puxar uma lista de todos os tutores que estão cadastrados  */
 router.get('/owners',(req, res) => {
     Owners.findAll({
-        include: [{model:Pet, attributes: ['id', 'name']}] // incluido a tabela Pet associada a tabela Owners pelo link de tutor animal
+        include: [
+            {
+                model: Pet, 
+                attributes: ['id', 'name']
+            }
+        ], // incluido a tabela Pet associada a tabela Owners pelo link de tutor animal
+        attributes: ['ownerId', 'name', 'fone']
     })
     .then( Owners =>{
         res.status(200).json(Owners);
@@ -17,6 +51,26 @@ router.get('/owners',(req, res) => {
         console.error(err);
         res.status(500).json({error: "Erro ao buscar proprietários e seus pets."});
     })
+});
+
+// Rota para atualizar o owner id 
+router.put("/owner/update/:id", (req, res) =>{
+    let ownerId = req.params.id;
+    let name = req.body.name;
+    let fone = req.body.fone;
+
+    Owners.update({ name : name, fone: fone}, {
+        where: {
+            ownerId : ownerId
+        },
+    })
+    .then(() =>{
+        res.status(200).send('Alteração realizada com sucesso!');
+    })
+    .catch(err =>{ 
+        console.error(err);
+        res.status(500).send({message: err.message})
+    });
 });
 
 
